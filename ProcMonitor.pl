@@ -1,47 +1,5 @@
 #! usr/bin/perl -w
 
-=pod
-
- PREAMBLE
-###
-###############################################################################
-###                 
-### Classification : Unclassified
-###
-###############################################################################
-###
-### Source File Name : ProcMonitor.pl
-###
-###############################################################################
-###
-### Purpose :
-### Script to monitor process CPU and memory statistics on Solaris 5.10.
-###
-###############################################################################
-###
-### Dependencies :
-### strict
-### Getopt::Std
-### Time::HiRes qw(gettimeofday)
-### Scalar::Util qw(looks_like_number)
-###
-###############################################################################
-###
-### Limitations :
-### None.
-###
-###############################################################################
-###
-### Modification History :
-###  
-### SCR
-### Number         Date[dd/mm/yy] RSE[F. Last]     Description
-###
-###############################################################################
-###
-
-=cut
-
 #control-f code: !@#00
 # !@#00 Subroutine Table of contents
 # !@#01 PrintStats
@@ -63,12 +21,12 @@
 # !@#17 Usage
 
 use strict;
-use Getopt::Std; #module for reading switches from the command line 
-use Time::HiRes qw(gettimeofday); #get current time in seconds and microseconds
+use Getopt::Std;                        #module for reading switches from the command line 
+use Time::HiRes qw(gettimeofday);       #get current time in seconds and microseconds
 use Scalar::Util qw(looks_like_number); #check to see if a variable is numeric
 
 $SIG{INT} = 'kill'; #control-C signal run kill subroutine
-$|++; #print STDOUT without buffering
+$|++;               #print STDOUT without buffering
 
 #get and process the options
 my %opts;
@@ -151,7 +109,7 @@ print "Sorting the data...\n";
 $GLOBAL_master_hash{'measure_pid_hash'}     = SortDataByMeasure($GLOBAL_master_hash{'pid_measure_hash'});
 $GLOBAL_master_hash{'measure_pid_avg_hash'} = SortDataByMeasure($GLOBAL_master_hash{'pid_measure_avg_hash'});
 
-#print all the stats to the corresponding logs
+# print all the stats to the corresponding logs
 print "Writing the reports...\n";
 PrintStats();
 
@@ -159,44 +117,19 @@ print "Complete!\n";
 
 exit 0;
 
-#END OF MAIN
-###############################################################################
-#START SUBROUTINES
-
 =pod
+=head1 PrintStats
+ 
+The directory will contain stats for total, averages, a master stat 
+file, per process stats and averages, and the original log created.
+This is called at the end of the script excustion to create the stats
+file.
 
- SUBROUTINE
-###############################################################################
-#                 
-#                        UNCLASSIFIED
-#
-#                        SYSTEM SUPPORT SOFTWARE ITEM
-#
-#                        PrintStats
-#
-#                        SUBROUTINE BODY
-#
-###############################################################################
-#
-# (U) DESCRIPTION:
-#     This subroutine will print out stats for the proccesses.
-#    
-# (U) ABSTRACT:
-#     The directory will contain stats for total, averages, a master stat 
-#     file, per process stats and averages, and the original log created.
-#     
-# (U) LIMITATIONS:
-#     None.
-#
-###############################################################################
-#
-#     PARAMETER:
-#     None.
-#
-#     RETURN:
-#     None.
-#
-###############################################################################
+inputs:
+  None
+
+output:
+  None
 
 =cut
 
@@ -227,7 +160,7 @@ sub PrintStats{
   #these loops prints a file for the stats of each pid
   foreach my $pid (keys %{$pid_measure_hash_ref}){
 
-    if(open my $FH, ">$proc_dir/$pid"){
+    if(open my $FH, ">$proc_dir/$pid.csv"){
       print $FH "$label\n"; 
 
       foreach my $measure (sort { $a <=> $b} keys %{$pid_measure_hash_ref->{$pid}}){
@@ -245,7 +178,7 @@ sub PrintStats{
   }
 
   # this loop prints all the stats into a single file
-  if(open my $FH, ">stats"){
+  if(open my $FH, ">stats.csv"){
     print $FH "$label\n"; 
 
     foreach my $measure (sort { $a <=> $b} keys %{$measure_pid_hash_ref}){
@@ -265,7 +198,7 @@ sub PrintStats{
   }
   
   # this loop prints each measures totals
-  if(open my $FH, ">totals"){
+  if(open my $FH, ">totals.csv"){
     print $FH "$totals_label\n";
 
     foreach my $measure (sort {$a <=> $b} keys %{$measure_totals_hash_ref}){
@@ -282,7 +215,7 @@ sub PrintStats{
   # these loops print each pids averages into  a seperate file
   foreach my $pid (keys %{$pid_measure_avg_hash_ref}){
 
-    if(open my $FH, ">$avg_dir/$pid"){
+    if(open my $FH, ">$avg_dir/$pid.csv"){
       print $FH "$label\n"; 
 
       foreach my $measure (sort { $a <=> $b} keys %{$pid_measure_avg_hash_ref->{$pid}}){
@@ -300,7 +233,7 @@ sub PrintStats{
   }
   
   # these loops print all the averages into a single file
-  if(open my $FH, ">avgs"){
+  if(open my $FH, ">avgs.csv"){
     print $FH "$label\n"; 
 
     foreach my $measure (sort { $a <=> $b} keys %{$measure_pid_avg_hash_ref}){
@@ -320,7 +253,7 @@ sub PrintStats{
   }
  
   # this loops prints the totals averages
-  if(open my $FH, ">avgtotals"){
+  if(open my $FH, ">avgtotals.csv"){
     print $FH "$totals_label\n";
 
     foreach my $measure (sort {$a <=> $b} keys %{$measure_totals_avg_hash_ref}){
@@ -338,37 +271,15 @@ sub PrintStats{
 
 =pod
 
- SUBROUTINE
-###############################################################################
-#                 
-#                        UNCLASSIFIED
-#
-#                        SYSTEM SUPPORT SOFTWARE ITEM
-#
-#                        kill
-#
-#                        SUBROUTINE BODY
-#
-###############################################################################
-#
-# (U) DESCRIPTION:
-#     This subroutine will end the recording loop when ctrl-C is caught.
-#    
-# (U) ABSTRACT:
-#     None.
-#     
-# (U) LIMITATIONS:
-#     None.
-#
-###############################################################################
-#
-#     PARAMETER:
-#     None.
-#
-#     RETURN:
-#     None.
-#
-###############################################################################
+=head1 kill
+ 
+This subroutine will end the recording loop when ctrl-C is caught.
+
+inputs:
+  None
+
+output:
+  None
 
 =cut
 
@@ -381,39 +292,17 @@ sub kill{
 
 =pod
 
- SUBROUTINE
-###############################################################################
-#                 
-#                        UNCLASSIFIED
-#
-#                        SYSTEM SUPPORT SOFTWARE ITEM
-#
-#                        RecordMeasureStats
-#
-#                        SUBROUTINE BODY
-#
-###############################################################################
-#
-# (U) DESCRIPTION:
-#     This subroutine will loop through all the pids, read the proc stats
-#     and record the stats to the log.
-#    
-# (U) ABSTRACT:
-#     None.
-#     
-# (U) LIMITATIONS:
-#     None.
-#
-###############################################################################
-#
-#     PARAMETER:
-#     $FH - the log filehandle to print to.
-#     $measure - the current measure we are on.
-#
-#     RETURN:
-#     None.
-#
-###############################################################################
+=head1 RecordMeasureStats
+
+This subroutine will loop through all the pids, read the proc stats
+and record the stats to the log.
+
+inputs:
+  $FH - the log filehandle to print to.
+  $measure - the current measure we are on.
+
+output:
+  None
 
 =cut
 
@@ -437,42 +326,20 @@ sub RecordMeasureStats{
 
 =pod
 
- SUBROUTINE
-###############################################################################
-#                 
-#                        UNCLASSIFIED
-#
-#                        SYSTEM SUPPORT SOFTWARE ITEM
-#
-#                        CalcAverages
-#
-#                        SUBROUTINE BODY
-#
-###############################################################################
-#
-# (U) DESCRIPTION:
-#     This subroutine will calculate the running averages of each of the stats.
-#    
-# (U) ABSTRACT:
-#     The subroutine will look at each stat, then loop through each of the
-#     previous stats adding up the time it took to take the measurement, 
-#     summing each stat, and recording the number of sums made. it will stop
-#     summing when the total time it has gone back is more then the running 
-#     passed in. Then it creates a new hash and puts the running averages for
-#     both the process stats and the measure totals.
-#     
-# (U) LIMITATIONS:
-#     None.
-#
-###############################################################################
-#
-#     PARAMETER:
-#     $average_period - the time in seconds to check back and average over
-#
-#     RETURN:
-#     None.
-#
-###############################################################################
+=head1 CalcAverages
+
+The subroutine will look at each stat, then loop through each of the
+previous stats adding up the time it took to take the measurement, 
+summing each stat, and recording the number of sums made. it will stop
+summing when the total time it has gone back is more then the running 
+passed in. Then it creates a new hash and puts the running averages for
+both the process stats and the measure totals.
+
+inputs:
+  $average_period - the time in seconds to check back and average over
+
+outputs:
+  None
 
 =cut
 
@@ -587,38 +454,16 @@ sub CalcAverages{
 
 =pod
 
- SUBROUTINE
-###############################################################################
-#                 
-#                        UNCLASSIFIED
-#
-#                        SYSTEM SUPPORT SOFTWARE ITEM
-#
-#                        ReadLog
-#
-#                        SUBROUTINE BODY
-#
-###############################################################################
-#
-# (U) DESCRIPTION:
-#     This subroutine will read the values from the log and place them in a 
-#     array inside a hash according the pid and measure.
-#    
-# (U) ABSTRACT:
-#     None.
-#     
-# (U) LIMITATIONS:
-#     None.
-#
-###############################################################################
-#
-#     PARAMETER:
-#     $log_file - the log to read from
-#
-#     RETURN:
-#     None.
-#
-###############################################################################
+=head1 ReadLog
+
+This subroutine will read the values from the log and place them in a 
+array inside a hash according the pid and measure.
+
+inputs:
+  $log_file - the log to read from
+
+output:
+  None
 
 =cut
 
@@ -674,39 +519,17 @@ sub ReadLog{
 
 =pod
 
- SUBROUTINE
-###############################################################################
-#                 
-#                        UNCLASSIFIED
-#
-#                        SYSTEM SUPPORT SOFTWARE ITEM
-#
-#                        ReadSection
-#
-#                        SUBROUTINE BODY
-#
-###############################################################################
-#
-# (U) DESCRIPTION:
-#     This subroutine will dectect if a new section is encoutner and will
-#     switch values to signal a new section.
-#    
-# (U) ABSTRACT:
-#     None.
-#     
-# (U) LIMITATIONS:
-#     None.
-#
-###############################################################################
-#
-#     PARAMETER:
-#     $line - the log to read from
-#     $read_section_ref - reference to the read section variable
-#
-#     RETURN:
-#     return - -1 if a switch secton has been found
-#
-###############################################################################
+=head1 ReadSection
+
+This subroutine will dectect if a new section is encoutner and will
+switch values to signal a new section.
+
+inputs:
+  $line - the log to read from
+  $read_section_ref - reference to the read section variable
+
+ouput:
+  -1 if a switch secton has been found
 
 =cut
 
@@ -728,38 +551,16 @@ sub SetReadSection{
 
 =pod
 
- SUBROUTINE
-###############################################################################
-#                 
-#                        UNCLASSIFIED
-#
-#                        SYSTEM SUPPORT SOFTWARE ITEM
-#
-#                        SortDataByMeasure
-#
-#                        SUBROUTINE BODY
-#
-###############################################################################
-#
-# (U) DESCRIPTION:
-#     This subroutine will loop through a hash of stats sort by pids and then
-#     and then measures, and will resort it by measures then pids.
-#    
-# (U) ABSTRACT:
-#     None.
-#     
-# (U) LIMITATIONS:
-#     None.
-#
-###############################################################################
-#
-#     PARAMETER:
-#     $pid_measure_hash_ref - the hash reference to the pid by measure hash
-#
-#     RETURN:
-#     return - a hash reference to a measure by pid hash
-#
-###############################################################################
+=head1 SortDataByMeasure
+
+This subroutine will loop through a hash of stats sort by pids and then
+and then measures, and will resort it by measures then pids.
+
+inputs:
+  $pid_measure_hash_ref - the hash reference to the pid by measure hash
+
+output:
+  a hash reference to a measure by pid hash
 
 =cut
 
@@ -785,42 +586,19 @@ sub SortDataByMeasure{
 
 =pod
 
- SUBROUTINE
-###############################################################################
-#                 
-#                      UNCLASSIFIED
-#
-#                      SYSTEM SUPPORT SOFTWARE ITEM
-#
-#                      GetCPUInfo
-#
-#                      SUBROUTINE BODY
-#
-###############################################################################
-#
-# (U) DESCRIPTION:
-#     This subroutine will get the number of virtual cores available to 
-#     the system.
-#     
-# (U) ABSTRACT:
-#     This subroutine uses the psrinfo system command to find information
-#     about the systems processors. Each physical processor can have 
-#     virutal processors that the OS will see. There can be multiple 
-#     physical processors so each string of the output is searched and
-#     the number of virtual processors is totaled up.
-#     
-# (U) LIMITATIONS:
-#     None.
-#
-###############################################################################
-#
-#     PARAMETERS:
-#     None.
-#
-#     RETURN:
-#     $cpu_count - The number of CPUs
-#
-###############################################################################
+=head1 GetCPUInfo
+
+This subroutine uses the psrinfo system command to find information
+about the systems processors. Each physical processor can have 
+virutal processors that the OS will see. There can be multiple 
+physical processors so each string of the output is searched and
+the number of virtual processors is totaled up.
+
+inputs:
+  None
+
+output:
+  $cpu_count - The number of CPUs
 
 =cut
 
@@ -851,38 +629,16 @@ sub  GetCPUInfo{
 
 =pod
 
- SUBROUTINE
-###############################################################################
-#                 
-#                        UNCLASSIFIED
-#
-#                        SYSTEM SUPPORT SOFTWARE ITEM
-#
-#                        SortProcInfo
-#
-#                        SUBROUTINE BODY
-#
-###############################################################################
-#
-# (U) DESCRIPTION:
-#     This subroutine will loop through the raw stat data and make calculations
-#     and sort the data. It also generates the totals for each measure.
-#    
-# (U) ABSTRACT:
-#     None.
-#     
-# (U) LIMITATIONS:
-#     None.
-#
-###############################################################################
-#
-#     PARAMETER:
-#     None.
-#
-#     RETURN:
-#     return - a hash reference to a measure by pid hash
-#
-###############################################################################
+=head1 SortProcInfo
+
+This subroutine will loop through the raw stat data and make calculations
+and sort the data. It also generates the totals for each measure.
+
+inputs:
+  None
+
+outputs:
+  return - a hash reference to a measure by pid hash
 
 =cut
 
@@ -1023,38 +779,16 @@ sub SortProcInfo{
 
 =pod
 
- SUBROUTINE
-###############################################################################
-#                 
-#                        UNCLASSIFIED
-#
-#                        SYSTEM SUPPORT SOFTWARE ITEM
-#
-#                        PrintHeader
-#
-#                        SUBROUTINE BODY
-#
-###############################################################################
-#
-# (U) DESCRIPTION:
-#     This subroutine will get some system information and print the it to the
-#     logfile.
-#    
-# (U) ABSTRACT:
-#     None.
-#     
-# (U) LIMITATIONS:
-#     None.
-#
-###############################################################################
-#
-#     PARAMETER:
-#     $FH - the log file handle to print to.
-#
-#     RETURN:
-#     None.
-#
-###############################################################################
+=head1 PrintHeader
+
+This subroutine will get some system information and print the it to the
+logfile.
+
+inputs:
+  $FH - the log file handle to print to.
+
+output:
+  None
 
 =cut
 
@@ -1096,37 +830,15 @@ sub PrintHeader{
 
 =pod
 
- SUBROUTINE
-###############################################################################
-#                 
-#                        UNCLASSIFIED
-#
-#                        SYSTEM SUPPORT SOFTWARE ITEM
-#
-#                        GetPIDs
-#
-#                        SUBROUTINE BODY
-#
-###############################################################################
-#
-# (U) DESCRIPTION:
-#     This subroutine will get all the current pids in the proc directory.
-#    
-# (U) ABSTRACT:
-#     None.
-#     
-# (U) LIMITATIONS:
-#     None.
-#
-###############################################################################
-#
-#     PARAMETER:
-#     None.
-#
-#     RETURN:
-#     @pid_array - a new array of current pids.
-#
-###############################################################################
+=head1 GetPIDs
+
+This subroutine will get all the current pids in the proc directory.
+
+inputs:
+  None
+
+outputs:
+  @pid_array - a new array of current pids.
 
 =cut
 
@@ -1150,39 +862,17 @@ sub GetPIDs{
 
 =pod
 
- SUBROUTINE
-###############################################################################
-#                 
-#                    UNCLASSIFIED
-#
-#                    SYSTEM SUPPORT SOFTWARE ITEM
-#
-#                    GetMemoryInfo
-# 
-#                    SUBROUTINE BODY
-#
-###############################################################################
-#
-# (U) DESCRIPTION:
-#     This subroutine will get the system memory configuration.
-#     
-# (U) ABSTRACT:
-#     This subroutine makes uses Solaris system commands to parse info 
-#     about the current system. It will exit if system info can not be
-#     gathered.
-#     
-# (U) LIMITATIONS:
-#     None.
-#
-###############################################################################
-#
-#     PARAMETERS:
-#     None.
-#
-#     RETURN:
-#     @mem_array - an array with the memory values
-#
-###############################################################################
+=head1 GetMemoryInfo
+ 
+This subroutine makes uses Solaris system commands to parse info 
+about the current system. It will exit if system info can not be
+gathered.
+
+inputs:
+  None
+
+ouput:
+  @mem_array - an array with the memory values
 
 =cut
 
@@ -1227,38 +917,16 @@ sub GetMemoryInfo{
 
 =pod
 
- SUBROUTINE
-###############################################################################
-#                 
-#                        UNCLASSIFIED
-#
-#                        SYSTEM SUPPORT SOFTWARE ITEM
-#
-#                        Mygettimeofday
-#
-#                        SUBROUTINE BODY
-#
-###############################################################################
-#
-# (U) DESCRIPTION:
-#     This is a wrapper for the gettimeofday subroutine and does string 
-#     concatenation for a truer time value.
-#    
-# (U) ABSTRACT:
-#     None.
-#     
-# (U) LIMITATIONS:
-#     None.
-#
-###############################################################################
-#
-#     PARAMETER:
-#     None.
-#
-#     RETURN:
-#     $time - a precise time measurement
-#
-###############################################################################
+=head1 Mygettimeofday
+
+This is a wrapper for the gettimeofday subroutine and does string 
+concatenation for a truer time value.
+
+inputs:
+  None.
+
+ouput:
+  $time - a precise time measurement
 
 =cut
 
@@ -1272,40 +940,17 @@ sub Mygettimeofday{
 
 =pod
 
- SUBROUTINE
-###############################################################################
-#                 
-#                    UNCLASSIFIED
-#
-#                    SYSTEM SUPPORT SOFTWARE ITEM
-#
-#                    ProcessOpts
-#
-#                    SUBROUTINE BODY
-#
-###############################################################################
-#
-# (U) DESCRIPTION:
-#     This subroutine processes the options given by the user and makes
-#     checks and formats the options.
-#     
-# (U) ABSTRACT:
-#     Each option is checked to see if there is a defined option, and if 
-#     not a default value is chosen. If an option is invalid the script
-#     exits and notifys the user.
-#     
-# (U) LIMITATIONS:
-#     None.
-#
-###############################################################################
-#
-#     PARAMETER:
-#     $opts_hash_ref - A reference to the hash holding options
-#
-#     RETURN:
-#     None.
-#
-###############################################################################
+=head1 ProcessOpts
+
+Each option is checked to see if there is a defined option, and if 
+not a default value is chosen. If an option is invalid the script
+exits and notifys the user.
+
+inputs:
+  $opts_hash_ref - A reference to the hash holding options
+
+ouput:
+  None
 
 =cut
 
@@ -1393,37 +1038,15 @@ sub ProcessOpts{
 
 =pod
 
- SUBROUTINE
-###############################################################################
-#                 
-#                       UNCLASSIFIED
-#
-#                       SYSTEM SUPPORT SOFTWARE ITEM
-#
-#                       ReadProcFile
-#
-#                       SUBROUTINE BODY
-#
-###############################################################################
-#
-# (U) DESCRIPTION:
-#     This subroutine reads the proc files.
-#     
-# (U) ABSTRACT:
-#     None.
-#     
-# (U) LIMITATIONS:
-#     None.
-#
-###############################################################################
-#
-#    PARAMETER:
-#    $pid - the pid to check
-#
-#    RETURN:
-#    @return_array - the proc info packaged
-#
-###############################################################################
+=head1 ReadProcFile
+
+This subroutine reads the proc files.
+
+inputs:
+  $pid - the pid to check
+
+output:
+  @return_array - the proc info packaged
 
 =cut
 
@@ -1541,37 +1164,15 @@ sub ReadProcFile{
 
 =pod
 
- SUBROUTINE
-###############################################################################
-#                 
-#                 UNCLASSIFIED
-#
-#                 SYSTEM SUPPORT SOFTWARE ITEM
-#
-#                 timestruct2int
-#
-#                 SUBROUTINE BODY
-#
-###############################################################################
-#
-# (U) DESCRIPTION:
-#     This subroutine unpacks the time struct from the /proc files.
-#     
-# (U) ABSTRACT:
-#     None.
-#     
-# (U) LIMITATIONS:
-#     None.
-#
-###############################################################################
-#
-#     PARAMETER:
-#     $timestruct - The timestruct object
-#
-#     RETURN:
-#     $time - The time in seconds
-#
-###############################################################################
+=head1 timestruct2int
+
+This subroutine unpacks the time struct from the /proc files.
+
+inputs:
+  $timestruct - The timestruct object
+
+output:
+  $time - The time in seconds
 
 =cut
 
@@ -1591,36 +1192,15 @@ sub timestruct2int{
 
 =pod
 
- SUBROUTINE
-###############################################################################
-#                 
-#                 UNCLASSIFIED
-#
-#                 SYSTEM SUPPORT SOFTWARE ITEM
-#
-#                 Usage
-#
-#                 SUBROUTINE BODY
-#
-###############################################################################
-#
-# (U) DESCRIPTION:
-#     This subroutine prints out a usage statement.
-#     
-# (U) ABSTRACT:
-#     None.
-#
-# (U) LIMITATIONS:
-#     None.
-#
-# (U) WAIVERS:
-#     None.
-#
-###############################################################################
-#
-#     return $usagestring A string describing this script
-#
-###############################################################################
+=head1 Usage
+
+This subroutine prints out a usage statement.
+
+inputs:
+  None
+
+output:
+  $usagestring A string describing this script
 
 =cut
 
@@ -1716,7 +1296,7 @@ sub Usage{
   "'IO(kB)': Total chars read or written during this measure.\n".
   "\n".
   "#########################################################################\n".
-  "Written by Daniel Moody at LM SSC, daniel.m.moody\@lmco.com\n";
+  "Written by Daniel Moody, dmoody256\@gmail.com\n";
 
   print $usagestring;
   exit 0;
