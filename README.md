@@ -10,16 +10,13 @@ everything into a new directory on each run. The output is in the form of
 comma separated values. 
 
 To run the script, enter this in the terminal:
-
- # perl ProcMonitor.pl
-
+<pre><code># perl ProcMonitor.pl
+</code></pre>
 To see usage details and info:
-
- # perl ProcMonitor.pl -h
-
+<pre><code># perl ProcMonitor.pl -h
+</code></pre>
 Below is the usage output:
-
-#########################################################################
+<pre><code>#########################################################################
     ProcMonitor.pl usage and manual.
 
 ProcMonitor.pl monitors CPU and memory attributes over a time
@@ -100,3 +97,4 @@ Total file columns in order:
 
 #########################################################################
 Written by Daniel Moody, dmoody256@gmail.com
+</code></pre>
