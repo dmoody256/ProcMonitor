@@ -11,11 +11,11 @@ comma separated values.
 
 To run the script, enter this in the terminal:
 
-# perl ProcMonitor.pl
+ # perl ProcMonitor.pl
 
 To see usage details and info:
 
-# perl ProcMonitor.pl -h
+ # perl ProcMonitor.pl -h
 
 Below is the usage output:
 
